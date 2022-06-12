@@ -39,6 +39,6 @@ public class TcpHandler extends Thread {
     }
 
     private String findOneServer() {
-        return remoteLocationList[random.nextInt() % remoteLocationList.length];
+        return remoteLocationList[random.nextInt(remoteLocationList.length)];
     }
 }
