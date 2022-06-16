@@ -31,12 +31,24 @@ public class App {
             } else {
                 //释放默认配置文件
                 configMap = new JSONObject();
-                ConfigEntity configEntity = new ConfigEntity();
-                configEntity.setListenPort(80);
+
+                //设置一个负载均衡器默认配置
+                ConfigEntity proxyEntity = new ConfigEntity();
+                proxyEntity.setMode("proxy");
+                proxyEntity.setListenPort(80);
                 JSONArray hosts = new JSONArray();
                 String[] localhost = {"localhost:8080"};
-                configEntity.setRemoteLocation(localhost);
-                configMap.put("un_name", configEntity);
+                proxyEntity.setRemoteLocation(localhost);
+                configMap.put("un_name_proxy_server", proxyEntity);
+
+                //设置一个静态资源服务器默认配置
+                ConfigEntity resourceEntity = new ConfigEntity();
+                resourceEntity.setMode("resource");
+                resourceEntity.setListenPort(81);
+                resourceEntity.setPath("D:/");
+                resourceEntity.setUri("/sample/");
+                configMap.put("un_name_resource_server", resourceEntity);
+
                 fileUtil.outputFileAsByte(JSONObject.toJSONString(configMap,true).getBytes(), "./Jginx.conf");
                 System.out.println("已释放默认配置文件 可查看修改后重新启动");
                 return;
@@ -45,7 +57,16 @@ public class App {
         System.out.println("启动监听线程...");
         configMap.forEach((k, v) -> {
             ConfigEntity configEntity = JSONObject.toJavaObject((JSONObject) v, ConfigEntity.class);
-            new TcpHandler(configEntity.getListenPort(), configEntity.getRemoteLocation(), k).start();
+            switch (configEntity.getMode()) {
+                case "resource":
+                    new HttpResourceServer(configEntity.getUri(),configEntity.getPath(),configEntity.getListenPort(),k).startListen();
+                    break;
+                case "proxy":
+                    new TcpHandler(configEntity.getListenPort(), configEntity.getRemoteLocation(), k).start();
+                    break;
+                default:
+                    throw new RuntimeException("配置文件中不支持的mode: " + configEntity.getMode());
+            }
         });
 
     }
