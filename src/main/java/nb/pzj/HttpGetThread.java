@@ -22,7 +22,7 @@ public class HttpGetThread extends Thread {
         Headers responseHeaders = he.getResponseHeaders();
         if (requestMethod.equalsIgnoreCase("GET")) {
             File file = new File(path + he.getRequestURI().getPath().replace(uri, ""));
-            this.setName(this.getName() + " download " + file.getName());
+            this.setName(this.getName() + he.getLocalAddress() + " download " + file.getName());
             System.out.println(this.getName() + " 开始下载");
             if (!new FileUtil().fileIsExist(file.getAbsolutePath())) {
                 responseHeaders.set("Content-Type", "text/html;charset=UTF-8");
@@ -60,7 +60,6 @@ public class HttpGetThread extends Thread {
             responseBody.close();
             System.out.println(this.getName() + " 下载完成");
         } catch (IOException e) {
-        } finally {
             System.out.println(this.getName() + " 异常停止");
         }
     }
