@@ -11,15 +11,8 @@ public class FileUtil {
      * 如果文件存在会返回true
      */
     public boolean fileIsExist(String needFile) {
-        boolean exist = false;
         File file = new File(needFile);
-        if (file.exists() && file.isFile()) {
-            exist = true;
-            System.out.println("文件存在: " + file);
-        } else {
-            System.out.println("文件不存在" + file);
-        }
-        return exist;
+        return file.exists() && file.isFile();
     }
 
     /**

@@ -27,6 +27,7 @@ public class TcpRemote extends Thread {
             long activeCheck = System.currentTimeMillis();
             while (System.currentTimeMillis() - activeCheck < 1000 * 60) {
                 if (fromSocket.isClosed() || toSocket.isClosed()) {
+                    System.out.println("Thread stop : " + getName() + " cause: socket closed");
                     return;
                 }
 
@@ -41,11 +42,12 @@ public class TcpRemote extends Thread {
                 out.flush();
             }
 
-            System.out.println("Thread stop : " + getName());
+            System.out.println("Thread stop : " + getName() + " cause: keep alive timeout");
         } catch (SocketException e) {
-            System.out.println("Thread stop : " + getName());
+            System.out.println("Thread stop : " + getName() + " cause: socket closed");
             //e.printStackTrace();
         } catch (Exception e) {
+            System.out.println("Thread stop : " + getName() + " cause: socket exception");
             e.printStackTrace();
         } finally {
             try {
@@ -67,9 +69,7 @@ public class TcpRemote extends Thread {
         byte[] needPrint = new byte[readFlag];
         System.arraycopy(data, 0, needPrint, 0, readFlag);
         System.out.println("\n*************** " + new Date() + " Thread " + getName() + " ***************\n"
-                        + new String(needPrint)
-                        + "\n*************** FINISH ***************\n"
-        );
+                        + new String(needPrint));
     }
 }
 

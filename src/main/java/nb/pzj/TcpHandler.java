@@ -22,21 +22,28 @@ public class TcpHandler extends Thread {
     public void run() {
         System.out.println("TcpHandler " + getName() + " start: listen [ " + localPort + " ] remote to " + Arrays.toString(remoteLocationList));
         try (ServerSocket serverSocket = new ServerSocket(localPort)) {
-            Socket clientSocket = null;
-            Socket remoteServerSocket = null;
             while (true) {
-                clientSocket = serverSocket.accept();
-                String server = findOneServer();
-                remoteServerSocket = new Socket(server.split(":")[0], Integer.valueOf(server.split(":")[1]));
-                new TcpRemote(clientSocket, remoteServerSocket, getName() + " @ " + clientSocket.getInetAddress().getHostAddress() + " --> " + server).start();
-                new TcpRemote(remoteServerSocket, clientSocket, getName() + " @ " + clientSocket.getInetAddress().getHostAddress() + " <-- " + server).start();
+                Socket accept = serverSocket.accept();
+                for (int i = 0; i < 5; i++) {
+                    try {
+                        openOneSocket(accept);
+                        break;
+                    } catch (RuntimeException e) {
+                        System.out.println("Failed open connection, times = " + i);
+                    }
+                }
+
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private String findOneServer() {
-        return remoteLocationList[random.nextInt(remoteLocationList.length)];
+    private void openOneSocket(Socket clientSocket) throws IOException {
+        //find one server
+        String server = remoteLocationList[random.nextInt(remoteLocationList.length)];
+        Socket remoteServerSocket = new Socket(server.split(":")[0], Integer.valueOf(server.split(":")[1]));
+        new TcpRemote(remoteServerSocket, clientSocket, getName() + " @ " + clientSocket.getInetAddress().getHostAddress() + " <-- " + server).start();
+        new TcpRemote(clientSocket, remoteServerSocket, getName() + " @ " + clientSocket.getInetAddress().getHostAddress() + " --> " + server).start();
     }
 }

@@ -4,7 +4,6 @@ import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.spi.HttpServerProvider;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -17,15 +16,14 @@ public class HttpResourceServer {
     private String name;
 
     public void startListen() {
-        HttpServerProvider provider = HttpServerProvider.provider();
-        HttpServer server = null;
         try {
-            server = provider.createHttpServer(new InetSocketAddress(port), 100);
+            HttpServerProvider provider = HttpServerProvider.provider();
+            HttpServer server = provider.createHttpServer(new InetSocketAddress(port), 100);
+            server.createContext(uri, new HttpGetHandler(uri, path));
+            server.start();
+            System.out.println("HttpHandler " + name + " start: listen [ port:" + port + ", uri:" + uri + " ] remote to [ " + path + " ]");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        server.createContext(uri, new HttpGetHandler(uri,path));
-        server.start();
-        System.out.println("HttpHandler test_B start: listen [ port:"+port+", uri:"+uri+" ] remote to ["+path+"]");
     }
 }
