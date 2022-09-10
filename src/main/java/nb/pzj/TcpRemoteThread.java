@@ -7,11 +7,11 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.Date;
 
-public class TcpRemote extends Thread {
+public class TcpRemoteThread extends Thread {
     private final Socket fromSocket;
     private final Socket toSocket;
 
-    public TcpRemote(Socket fromSocket, Socket toSocket, String name) {
+    public TcpRemoteThread(Socket fromSocket, Socket toSocket, String name) {
         super(name);
         this.fromSocket = fromSocket;
         this.toSocket = toSocket;

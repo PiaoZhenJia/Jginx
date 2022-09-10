@@ -1,11 +1,12 @@
 package nb.pzj;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import nb.pzj.util.FileUtil;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class App {
 
@@ -30,26 +31,8 @@ public class App {
                 configMap = JSONObject.parseObject(new String(fileUtil.getByteFromFile(new File("./Jginx.conf"))));
             } else {
                 //释放默认配置文件
-                configMap = new JSONObject();
-
-                //设置一个负载均衡器默认配置
-                ConfigEntity proxyEntity = new ConfigEntity();
-                proxyEntity.setMode("proxy");
-                proxyEntity.setListenPort(80);
-                JSONArray hosts = new JSONArray();
-                String[] localhost = {"localhost:8080"};
-                proxyEntity.setRemoteLocation(localhost);
-                configMap.put("un_name_proxy_server", proxyEntity);
-
-                //设置一个静态资源服务器默认配置
-                ConfigEntity resourceEntity = new ConfigEntity();
-                resourceEntity.setMode("resource");
-                resourceEntity.setListenPort(81);
-                resourceEntity.setPath("D:/");
-                resourceEntity.setUri("/sample/");
-                configMap.put("un_name_resource_server", resourceEntity);
-
-                fileUtil.outputFileAsByte(JSONObject.toJSONString(configMap,true).getBytes(), "./Jginx.conf");
+                InputStream resourceAsStream = App.class.getResourceAsStream("/default.jginx.conf.json");
+                new FileUtil().outputFileAsByte(toByteArray(resourceAsStream), "./Jginx.conf");
                 System.out.println("已释放默认配置文件 可查看修改后重新启动");
                 return;
             }
@@ -62,12 +45,22 @@ public class App {
                     new HttpResourceServer(configEntity.getUri(),configEntity.getPath(),configEntity.getListenPort(),k).startListen();
                     break;
                 case "proxy":
-                    new TcpHandler(configEntity.getListenPort(), configEntity.getRemoteLocation(), k).start();
+                    new TcpRemoteHandler(configEntity.getListenPort(), configEntity.getRemoteLocation(), k).start();
                     break;
                 default:
                     throw new RuntimeException("配置文件中不支持的mode: " + configEntity.getMode());
             }
         });
 
+    }
+
+    public static byte[] toByteArray(InputStream input) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024*4];
+        int n = 0;
+        while (-1 != (n = input.read(buffer))) {
+            output.write(buffer, 0, n);
+        }
+        return output.toByteArray();
     }
 }

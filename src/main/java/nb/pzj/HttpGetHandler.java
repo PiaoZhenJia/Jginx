@@ -14,7 +14,7 @@ public class HttpGetHandler extends Thread implements HttpHandler {
 
     @Override
     public void handle(HttpExchange he) {
-        new HttpGetThread(uri,path,he).start();
+        ThreadPoolKeeper.getThreadPool().execute(new HttpGetThread(uri, path, he));
     }
 
 

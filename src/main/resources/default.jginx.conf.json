@@ -1,0 +1,13 @@
+{
+	"un_name_resource_server":{
+		"listenPort":81,
+		"mode":"resource",
+		"path":"D:/",
+		"uri":"/sample/"
+	},
+	"un_name_proxy_server":{
+		"listenPort":80,
+		"mode":"proxy",
+		"remoteLocation":["localhost:8080"]
+	}
+}
